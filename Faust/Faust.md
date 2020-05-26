@@ -46,7 +46,7 @@ process = os.osc(freq);
 
 ``[OWL:A]`` in parameter label is what binds your device's input to Faust parameter. Parameter ranges that you can use A-H, AA-AH, BA-BH, CA-CH, DA-DH, PUSH (for pushbutton), ButtonA-ButtonD. This is what Faust patches support, but the actual parameters that have physical inputs on a particular device would be more limited. You would have to use MIDI to access those of them that don't have physical control on device.
 
-It's also possible to specify variable as digit from ``[OWL:0]`` to ``[OWL:39]``. This is convenient if you want to use Faust [variable substitution in lables](https://faust.grame.fr/doc/manual/index.html#variable-parts-of-a-label)
+It's also possible to specify variable as digit from ``[OWL:0]`` to ``[OWL:39]``. This is convenient if you want to use Faust [variable substitution in labels](https://faust.grame.fr/doc/manual/index.html#variable-parts-of-a-label)
 
 Example:
 
@@ -64,7 +64,7 @@ process = par(
 
 This patch renders first 8 partials from a wave with base frequency of 60 Hz by default. Each harmonic partial has editable gain. This is called a harmonic oscillator.
 
-Faust supports several variations for its UI widgets, but with hardware we're using either knobs (often with extra control by voltage) or buttons. So effectively using ``hslider``, ``vslider`` or ``numentry`` widget give us a variable limited by upper and lower limit, while ``button``, ``togglebutton`` and ``checkbutton`` give a boolean variable with on/off state. 
+Faust supports several variations for its UI widgets, but with hardware we're using either knobs (often with extra control by voltage) or buttons. So effectively using ``hslider``, ``vslider`` or ``nentry`` widget give us a variable limited by upper and lower limit, while ``button`` and ``checkbox`` give a boolean variable with on/off state. 
 
 
 ## Parameter output
