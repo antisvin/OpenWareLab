@@ -1,21 +1,41 @@
-# The language
+# The Language
 
-Faust is a functional language for DSP. Please see its [main site](https://faust.grame.fr/) for documentation and library reference.
+FAUST is a functional language for DSP. Please see its [main site](https://faust.grame.fr/) for documentation and library reference.
 
-There's lots of detailed info and tutorials, so this document won't cover that. Instead we'll focus on features that are specific to Owl/Openware.
+There's lots of detailed info and tutorials, so this document won't cover that. Instead we'll focus on features that are specific to OWL and the OpenWare firmware. But we have an ongoing tutorial series for learning FAUST on OWL, too:
 
-Sample files are part of this repo and can be built and loaded quickly using provided upload.py script. Example call would be something like this:
+ 1. [Getting Started](Tutorial/01_GettingStarted)
+ 2. [Dual VCA](Tutorial/02_DualVCA)
+
+Sample files are part of this repo and can be built and loaded quickly in any of three different ways:
+ - Using our [online compiler](https://www.rebeltech.org/patch-library/patches/my-patches/)
+ - Offline using [OwlProgram](https://github.com/pingdynasty/OwlProgram) Makefile
+ - Offline using [OwlProgram](https://github.com/pingdynasty/OwlProgram) and the provided `upload.py` script
+
+To compile a patch online (recommended), open the [Patch Library](https://www.rebeltech.org/patch-library/) with a Web MIDI enabled browser (e.g. Chrome), log in (create an account if necessary), go to [My Patches](https://www.rebeltech.org/patch-library/patches/my-patches/), click Create patch, and upload the Faust file or files that you want to try. Select compilation type `faust`. Click `Save and Compile`, wait for compilation to finish, click `Connect To Device`, and then click `Load` to run the patch on the device. If you want to store it in a memory slot, click `Store` and select which slot to store it in.
+
+To compile a patch offline, download [OwlProgram](https://github.com/pingdynasty/OwlProgram) and follow the installation and usage instructions provided. You can then compile and run a patch on the device with this type of command:
 
 ```
-PLATFORM=Magus ./upload.py --owl=/path/to/OwlProgram --slot=5
+make PATCHSOURCE=mypatchdirectory FAUST=mypatchname run
 ```
+
+This compiles the patch and sends it to the device to run from RAM, without storing. Here `mypatchname` is the name of your `.dsp` file without the `.dsp`, and `mypatchdirectory` is the folder you've got your patch files in.
+
+You can also use the provided upload.py script. Example call would be something like this:
+
+```
+./upload.py --owl=/path/to/OwlProgram --slot=5
+```
+
+This compiles the patch and stores it on the device in memory slot 5.
 
 
 # Program examples
 
 ## Trivial patch
 
-Simplest patch in Faust would look like this:
+Simplest patch in FAUST would look like this:
 
 ```
 process = _;
@@ -23,12 +43,12 @@ process = _;
 
 What it does is takes input from first audio channel and sends it to output without any modifications.
 
-You can compile it with online compiler at [patch library](https://www.rebeltech.org/patch-library) or build locally using [OwlLibrary](https://github.com/pingdynasty/OwlProgram)
+You can compile it with the online compiler at [patch library](https://www.rebeltech.org/patch-library) or build locally using [OwlLibrary](https://github.com/pingdynasty/OwlProgram)
 
 
 ## Display message on screen and make some noise
 
-If your device contains screen, you can use it to display a short information message. Let's try this example:
+If your device has a screen, you can use it to display a short information message. Let's try this example:
 
 ```
 declare message "Hello\nmake some noise";
@@ -38,12 +58,12 @@ import("stdfaust.lib");
 process = no.noise : *(0.5);
 ```
 
-Here first line adds metadata declaration, second line imports Faust's standard library and last sends output from white noise generator to output channel 1 with gain reduced by half.
+Here the first line adds a metadata declaration, second line imports FAUST's standard library and the last line sends output from a white noise generator to output channel 1 with gain reduced by half.
 
 
 ## Parameter input
 
-You can control patch parameters by binding them with Faust UI controls. Let's look at example patch:
+You can control patch parameters by binding them with FAUST UI controls. Let's look at an example patch:
 
 ```
 import("stdfaust.lib");
@@ -51,9 +71,9 @@ freq = hslider("Frequency[OWL:A]", 60, 60, 440, 1);
 process = os.osc(freq);
 ```
 
-``[OWL:A]`` in parameter label is what binds your device's input to Faust parameter. Parameter ranges that you can use A-H, AA-AH, BA-BH, CA-CH, DA-DH, PUSH (for pushbutton), ButtonA-ButtonD. This is what Faust patches support, but the actual parameters that have physical inputs on a particular device would be more limited. You would have to use MIDI to access those of them that don't have physical control on device.
+``[OWL:A]`` in parameter label is what binds your device's input to FAUST parameter. Parameter ranges that you can use A-H, AA-AH, BA-BH, CA-CH, DA-DH, PUSH (for pushbutton), ButtonA-ButtonD. This is what FAUST patches support, but the actual parameters that have physical inputs on a particular device would be more limited. You would have to use MIDI to access those of them that don't have physical control on device.
 
-It's also possible to specify variable as digit from ``[OWL:0]`` to ``[OWL:39]``. This is convenient if you want to use Faust [variable substitution in lables](https://faust.grame.fr/doc/manual/index.html#variable-parts-of-a-label)
+It's also possible to specify variable as digit from ``[OWL:0]`` to ``[OWL:39]``. This is convenient if you want to use FAUST [variable substitution in labels](https://faustdoc.grame.fr/manual/syntax/#variable-parts-of-a-label)
 
 Example:
 
@@ -71,31 +91,32 @@ process = par(
 
 This patch renders first 8 partials from a wave with base frequency of 60 Hz by default. Each harmonic partial has editable gain. This is called a harmonic oscillator.
 
-Faust supports several variations for its UI widgets, but with hardware we're using either knobs (often with extra control by voltage) or buttons. So effectively using ``hslider``, ``vslider`` or ``numentry`` widget give us a variable limited by upper and lower limit, while ``button``, ``togglebutton`` and ``checkbutton`` give a boolean variable with on/off state. 
+FAUST supports several variations for its UI widgets, but with hardware we're using either knobs (often with extra control by voltage) or buttons. So effectively using ``hslider``, ``vslider`` or ``numentry`` widget give us a variable limited by upper and lower limit, while ``button``, ``togglebutton`` and ``checkbutton`` give a boolean variable with on/off state. 
 
 
 ## Parameter output
 
-Some devices (currently only Magus) have support for outputting voltage. This is also available to patches in Faust. Let's see how it can be used:
+Some devices have support for CV outputs. This is also available to patches in FAUST. Let's see how it can be used:
 
 ```
 import("stdfaust.lib");
 
 freq     = hslider("Frequency[OWL:A]", 60, 60, 440, 1);
 lfo_freq = hslider("LFO frequency[OWL:B]", 0.3, 0.01, 1.0, 0.01) : si.smoo;
-lfo_out  = hbargraph("LFO>[OWL:C]", -1, 1);
+lfo_out  = hbargraph("LFO>[OWL:F]", -1, 1);
 
 process = attach(os.osc(freq), os.osc(lfo_freq) : lfo_out);
 ```
 
-This patch gives as a static sine wave tone initially. But if we connect output from patch point C with input in patch point A, we get slow frequency modulation in our audio.
+This patch produces a static sine wave tone initially. But if we connect output from patch point `F` with the input on patch point `A`, then we get a slow frequency modulation in our audio.
 
-A typical way to use CV output works like ``attach(_, hbargraph(...))`` - this allows us to bypass incoming audio and just force sending data to bargraph widget. If you're not familiar with ``attach`` primitive, have a look at [information in Faust docs](https://faust.grame.fr/doc/manual/index.html#attach-primitive) . The general idea is that its first input is returned unchanged, while output is multiplied by 0. So second parameter is not used, but can force some sort of calculation to be performed. In our case it's generating LFO signal and sending it to widget bound to parameter C.
+A typical way to use CV output works like ``attach(_, hbargraph(...))`` - this allows us to bypass incoming audio and just force sending data to bargraph widget. If you're not familiar with ``attach`` primitive, have a look at [information in FAUST docs](https://faustdoc.grame.fr/manual/syntax/#attach-primitive) . The general idea is that its first input is returned unchanged, while output is multiplied by 0. So second parameter is not used, but can force some sort of calculation to be performed. In our case it's generating LFO signal and sending it to widget bound to parameter F.
+Note that output parameters are designated with a trailing '>' in the parameter name, as in `LFO>` above. On the Magus, any of the 20 parameters can be designated either inputs or outputs. On Wizard and Lich, there are two fixed CV outputs, assigned to parameters `F` and `G`.
 
 
 ## MIDI
 
-It's possible to control your patches with MIDI. In fact, it's very easy to do so.
+It is possible to control your patches with MIDI. In fact, it's very easy to do so.
 
 ```
 declare options "[midi:on]";
@@ -118,7 +139,7 @@ After connecting your MIDI controller, you should be able to play some notes and
 
 ## V/Oct control
 
-This feature requires calibrating your device to have accurate V/Oct tracking. Unfortunately, current firmware (20.7) doesn't support such calibration. It's very likely that it will be added in the next release (at least for Magus).
+You can also use the audio inputs and outputs for 1 Volt per octave CV, for tuning oscillators and filters, and CV sequencing. This works on devices with DC-coupled audio such as Lich, Magus and OWL Modular, and requires calibrating your device to have accurate V/Oct tracking.
 
 Here's how you can use CV for controlling oscillator frequency:
 
@@ -133,8 +154,7 @@ tune = hslider("Tune[OWL:A]", 0, -2, 2, 0.01);
 process = sample2hertz(tune) : os.oscs;
 ```
 
-It's also possible to output CV. This also requires a calibrated device to be actually useful.
-
+It's also possible to output CV.
 Let's write a simple sequencer:
 
 ```
