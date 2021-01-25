@@ -22,9 +22,9 @@ Flash storage is only used for bootloader. Firmware and patches are stored on QS
 
 ## How is memory used?
 
-* ITCM RAM - used for interrupt vectors and selected time-critical code of firmware
-* DTCM RAM - stores firmware .data and .bss sections, stack and heap
-* AXI (D1) SRAM - stores currently loaded user patch. This means that maximum patch size (code + data) is 512kb.
+* ITCM RAM - used for interrupt vectors, selected time-critical code of firmware, RTOS stack and as dynamic memory
+* DTCM RAM - stores firmware .data and .bss sections and current patch (up to 80kb)
+* AXI (D1) SRAM - used as dynamic memory
 * AHB (D2) SRAM - stores firmware code that is not copied to ITCM, static data (except lookup tables) and DMA buffers (last 32kb)
 * D3 SRAM is currently unused
 * SDRAM chip is fully usable by user patch. It is allocated as dynamic memory.
@@ -99,17 +99,40 @@ Short encoder press brings out settings menu. It contains multiple pages that ca
 * *Data* - browse user resources. This is static data stored on QSPI storage, so it can can contain various lookup tables, wavetables or any other data. System resources (i.e. `__SETTINGS__`) start with `__` and are write-protected. Anything else can be deleted by clicking on it.
 * *Gates* - this displays current state of gate inputs/outputs. Clicking toggles output value.
 * *Scope* - use this to quickly check audio signals in inputs/output. Clicking and scrolling selects different audio channel. Note that this is not very accurate - audio is sample at display refresh rate.
+* *System* - various firmware procedures:
+ - bootloader jump
+ - patch storage erasure
+ - patch storage defragmentation
 
 ## Known issues
 
 * Changing encoder sensitivity changes user parameter values
 * Virtual parameter values can differ by 1 from user value in some cases
-* Occasional freezes when loading new patches
-* Patch storage erase is only possible from bootloader - possibly can be solved by ensuring that current patch is stopped
 * Settings saving probably won't work - need to be performed when patch is not running (but it's not used in UI yet)
 
 ## I have more questions!
 
-This port should be discussed on Daisy forum.
+This port should be discussed on [Daisy forum](https://forum.electro-smith.com/t/introducing-owlsy/788).
 
 Questions about writing patches (unrelated to Daisy) can be asked on [RebelTech forum](https://community.rebeltech.org/).
+
+# Changelog
+
+## V21.0
+
+Initial release
+
+## V21.1
+
+ - Enabled USB audio channels - device is usable as quad channel USB audio interface capturing its inputs
+ - Raised MCU clock from 400 MHz to 480 MHz
+ - Reclocked SAI to run codec at exactly 48000 Hz
+ - Various updates to resource menu for upcoming flash resources support
+
+## V22.0
+
+ - Memory layout changed to be compatible with OWL - *this breaks compatibility with old patch binaries, storage must be erased after updating*
+ - Additional fast RAM sections used as dynamic memory, typically giving noticable performance improvements
+ - Added resource storage access from upstream
+ - Added support for bootloader updates via MIDI
+ - FAUST patches will be build with faster memory buffer processing code, requires recent compiler version
