@@ -49,13 +49,14 @@ You can see total available size in storage and size used by patches and resourc
 
 ### C++
 
-#### Patch objects
+#### Serializing objects
 
 "ResourceStorage.h" header includes all the necessary files:
 
 * ResourceStorage - grants access to storage itself
-* StorageResource<typename Payload> is the template used for reading resources stored on flash
-* MemoryResource<typename Payload> is the template used for storing arbitrary data on flash
+* Resource - this class must include correct size attribute and buffer of that size must follow it. You're not expected to instantiate it manually, but it can be returned from some method of Storage class. Also, this is the base class for next two template classes.
+* StorageResource<typename Payload> is the template used for reading resources stored on flash.
+* MemoryResource<typename Payload> is the template uses an object allocated in memory as its payload.
 
 You should instantiate one or both of those templates for each type of data that you want to access:
 
@@ -69,7 +70,9 @@ using TestMemoryResource = MemoryResource<TestData>;
 using TestStorageResource = StorageResource<TestData>;
 ```
 
-#### Reading data
+### Objects access
+
+#### Reading data as an object
 
 This can be done by calling ResourceStorage.getResource<> template with desired type as parameter and patch index or name:
 
@@ -80,18 +83,55 @@ const TestStorageResource* res = storage.getResource<TestData>("foo.bar");
 
 Note that result is a pointer to resource object that can be NULL in case if no resource was found. Always check return for this!
 
-There can be more than one resource with given name, so it's more reliable to get resources by ID.
+There can be more than one resource with given name, in such case the first one would be used.
 
-##### Writing data
+Finally, this method would not copy data to memory, but reference data from storage directly. This won't require using any RAM, but can only be used if storage support memory mapped access. The latter limitation is important, because OWL2 platform devices don't have such support. So you must copy resources from that storage using `.loadResources()` method.
+
+#### Reading untyped data
+
+Another way to read object data is by using the same method without template parameter.
 
 ```
-TestMemoryResource res2;
-res2.payload.data = 10;
-res2.setName("foo.bar");
-bool result = storage.storeResource(5, res);
+const Resource* res = storage.getResource(5);
+const Resource* res = storage.getResource("foo.bar");
 ```
 
-This stores resource and returns success or failure result as boolean value. There's no method to store by resource name. Instead of that you just set resource name before saving.
+This works the same way as method above, differing only in returned object pointer's type.
+
+### Loading data to a preallocated object
+
+Storage object can also be used for loading data from flash to memory. This is useful when you're loading an object from a storage that doesn't provide memory-mapped access or if you want to load data to RAM to lower access latency.
+
+```
+TestMemoryResource test_data;
+
+storage.loadResource<TestMemoryResource>(5, test_data);
+storage.loadResource<TestMemoryResource>("foo.bar", test_data);
+```
+
+Success status is return as boolean value.
+
+#### Loading untyped data to a new buffer
+
+The same method can be called with a different signature to allocate a new buffer and create an untyped resource that contains that data. This is particularly useful for accesing array contents, so additional parameters to
+set length or offset for loaded data are available in this method:
+
+```
+Resource* res = storage.loadResource(5, 1024, 2048);
+Resource* res = storage.loadResource("foo.bar", 1024, 2048);
+```
+
+The example above would load 1Kb with 2Kb offset. Note that result will be NULL if this operation fails.
+
+#### Constructing array from resources
+
+Array objects (FloatArray, IntArray, etc) include a few extra fields in addition to array data. Resource class provides `.asArray()` method to construct array of correct size that points to data stored in resource buffer:
+
+```
+FloatArray array = resource.asArray<FloatArray, float>();
+```
+
+This method can be used with objects of Resource class or any of its child classes.
 
 #### Other operations
 
