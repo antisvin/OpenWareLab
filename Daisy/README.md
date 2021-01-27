@@ -27,7 +27,7 @@ Flash storage is only used for bootloader. Firmware and patches are stored on QS
 * AXI (D1) SRAM - used as dynamic memory
 * AHB (D2) SRAM - stores firmware code that is not copied to ITCM, static data (except lookup tables) and DMA buffers (last 32kb)
 * D3 SRAM is currently unused
-* SDRAM chip is fully usable by user patch. It is allocated as dynamic memory.
+* SDRAM chip is fully usable by user patch. It is allocated as dynamic memory if faster memory sections are full.
 
 ## How can I run it?
 
@@ -131,8 +131,11 @@ Initial release
 
 ## V22.0
 
- - Memory layout changed to be compatible with OWL - *this breaks compatibility with old patch binaries, storage must be erased after updating*
- - Additional fast RAM sections used as dynamic memory, typically giving noticable performance improvements
+ - Memory layout changed to be compatible with OWL - *this breaks compatibility with old patch binaries, storage must be erased after updating via "System" > "Erase patches" menu*
+ - Added backwards compatible mode for running stereo patches (detected automatically). This allows running patches from official Rebeltech library.
+ - Additional fast RAM sections used as dynamic memory, typically giving noticeable performance improvements
  - Added resource storage access from upstream
  - Added support for bootloader updates via MIDI
- - FAUST patches will be build with faster memory buffer processing code, requires recent compiler version
+ - FAUST patches will be built with faster memory buffer processing code, requires recent compiler version
+ - Experimental SOUL support merged to OwlProgram fork
+ - "System" menu for functions previously available from MIDI only
